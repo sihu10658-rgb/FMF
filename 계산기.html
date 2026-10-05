@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>FMF Math Engine Calculator</title>
+    <style>
+        body { background: #0f172a; color: #f8fafc; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .calculator { background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 320px; }
+        #display { width: 100%; height: 50px; background: #0f172a; color: #38bdf8; font-size: 24px; text-align: right; padding: 10px; box-sizing: border-box; border: 1px solid #334155; border-radius: 6px; margin-bottom: 15px; overflow-x: auto; }
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        button { background: #334155; color: #fff; border: none; padding: 15px; font-size: 16px; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #475569; }
+        button.op { background: #0284c7; }
+        button.op:hover { background: #0ea5e9; }
+        button.fmf { background: #7c3aed; }
+        button.fmf:hover { background: #8b5cf6; }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <div id="display">0</div>
+    <div class="buttons">
+        <button onclick="clearDisplay()">C</button>
+        <button class="fmf" onclick="runFmf('sqrt')">sqrt</button>
+        <button class="fmf" onclick="runFmf('ln')">ln</button>
+        <button class="op" onclick="appendChar('/')">/</button>
+        
+        <button onclick="appendChar('7')">7</button>
+        <button onclick="appendChar('8')">8</button>
+        <button onclick="appendChar('9')">9</button>
+        <button class="op" onclick="appendChar('*')">*</button>
+        
+        <button onclick="appendChar('4')">4</button>
+        <button onclick="appendChar('5')">5</button>
+        <button onclick="appendChar('6')">6</button>
+        <button class="op" onclick="appendChar('-')">-</button>
+        
+        <button onclick="appendChar('1')">1</button>
+        <button onclick="appendChar('2')">2</button>
+        <button onclick="appendChar('3')">3</button>
+        <button class="op" onclick="appendChar('+')">+</button>
+        
+        <button onclick="appendChar('0')">0</button>
+        <button onclick="appendChar('.')">.</button>
+        <button class="fmf" onclick="runFmf('sin')">sin</button>
+        <button class="fmf" onclick="runFmf('cos')">cos</button>
+
+        <button class="fmf" onclick="runFmf('exp')">exp</button>
+        <button class="fmf" onclick="runFmf('pow')">pow</button>
+        <button style="grid-column: span 2;" class="op" onclick="calculate()">=</button>
+    </div>
+</div>
+
+<script src="fmf.js"></script>
+<script>
+    let currentInput = "0";
+    let fmf_sqrt, fmf_ln, fmf_exp, fmf_sin, fmf_cos, fmf_pow;
+
+    Module.onRuntimeInitialized = function() {
+        fmf_sqrt = Module.cwrap('fmf_sqrt', 'number', ['number']);
+        fmf_ln = Module.cwrap('fmf_ln', 'number', ['number']);
+        fmf_exp = Module.cwrap('fmf_exp', 'number', ['number']);
+        fmf_sin = Module.cwrap('fmf_sin', 'number', ['number']);
+        fmf_cos = Module.cwrap('fmf_cos', 'number', ['number']);
+        fmf_pow = Module.cwrap('fmf_pow', 'number', ['number', 'number']);
+        document.getElementById('display').innerText = "FMF Engine Ready";
+    };
+
+    function updateDisplay() {
+        document.getElementById('display').innerText = currentInput;
+    }
+
+    function appendChar(char) {
+        if (currentInput === "0" || currentInput === "FMF Engine Ready") {
+            currentInput = char;
+        } else {
+            currentInput += char;
+        }
+        updateDisplay();
+    }
+
+    function clearDisplay() {
+        currentInput = "0";
+        updateDisplay();
+    }
+
+    function calculate() {
+        try {
+            currentInput = eval(currentInput).toString();
+            updateDisplay();
+        } catch (e) {
+            currentInput = "Error";
+            updateDisplay();
+        }
+    }
+
+    function runFmf(func) {
+        try {
+            let val = parseFloat(eval(currentInput));
+            let res = 0;
+            if (func === 'sqrt') res = fmf_sqrt(val);
+            else if (func === 'ln') res = fmf_ln(val);
+            else if (func === 'exp') res = fmf_exp(val);
+            else if (func === 'sin') res = fmf_sin(val);
+            else if (func === 'cos') res = fmf_cos(val);
+            else if (func === 'pow') {
+                let val2 = parseFloat(prompt("Enter exponent y:", "2"));
+                res = fmf_pow(val, val2);
+            }
+            currentInput = res.toString();
+            updateDisplay();
+        } catch (e) {
+            currentInput = "FMF Error";
+            updateDisplay();
+        }
+    }
+</script>
+
+</body>
+</html>
